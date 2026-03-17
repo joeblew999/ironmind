@@ -1,0 +1,21 @@
+name            = "ironmind-worker"
+main            = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# R2 bucket — same one the Mac Mini writes to
+[[r2_buckets]]
+binding  = "IRONMIND_R2"
+bucket_name = "ironmind"
+
+# Secrets (set via: wrangler secret put <NAME>)
+# IRONMIND_UPSTREAM_URL  — Mac Mini Tailscale address e.g. http://100.x.x.x:3000
+# IRONMIND_SHARED_SECRET — BLAKE3 hex shared between worker and Mac Mini
+
+[vars]
+IRONMIND_ENV = "production"
+
+# Dev: local R2 simulation
+[[env.dev.r2_buckets]]
+binding     = "IRONMIND_R2"
+bucket_name = "ironmind-dev"

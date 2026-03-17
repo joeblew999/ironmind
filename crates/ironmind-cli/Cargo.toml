@@ -1,6 +1,6 @@
 [package]
 name        = "ironmind"
-description = "ironmind CLI — agent runner + web chat server"
+description = "ironmind CLI — agent runner + web chat server + user admin"
 version.workspace    = true
 edition.workspace    = true
 license.workspace    = true
@@ -18,12 +18,15 @@ metal     = ["ironmind-core/metal",     "ironmind-mcp/metal",     "ironmind-web/
 cuda      = ["ironmind-core/cuda",      "ironmind-mcp/cuda",      "ironmind-web/cuda"]
 
 [dependencies]
-ironmind-core      = { path = "../ironmind-core" }
-ironmind-mcp       = { path = "../ironmind-mcp" }
-ironmind-web       = { path = "../ironmind-web" }
-tokio              = { workspace = true }
-anyhow             = { workspace = true }
-serde_json         = { workspace = true }
-tracing            = { workspace = true }
+ironmind-core  = { path = "../ironmind-core" }
+ironmind-mcp   = { path = "../ironmind-mcp" }
+ironmind-web   = { path = "../ironmind-web" }
+ironmind-r2    = { path = "../ironmind-r2" }
+ironmind-auth  = { path = "../ironmind-auth" }
+tokio          = { workspace = true }
+anyhow         = { workspace = true }
+serde_json     = { workspace = true }
+tracing        = { workspace = true }
 tracing-subscriber = { workspace = true }
-clap               = { workspace = true }
+clap           = { workspace = true }
+chrono         = { version = "0.4", features = ["serde"] }

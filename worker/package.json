@@ -1,0 +1,22 @@
+{
+  "name": "ironmind-worker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CF Worker proxy — Hono + Zod, forwards to Mac Mini via Tailscale, R2 storage",
+  "scripts": {
+    "dev":    "wrangler dev",
+    "deploy": "wrangler deploy",
+    "types":  "wrangler types",
+    "tc":     "tsc --noEmit"
+  },
+  "dependencies": {
+    "hono":                 "^4.6.0",
+    "zod":                  "^3.23.8",
+    "@hono/zod-validator":  "^0.4.1"
+  },
+  "devDependencies": {
+    "wrangler":                      "^3.78.0",
+    "@cloudflare/workers-types":     "^4.20241022.0",
+    "typescript":                    "^5.6.0"
+  }
+}

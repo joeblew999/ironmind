@@ -3332,9 +3332,12 @@ name = "ironmind"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "chrono",
  "clap",
+ "ironmind-auth",
  "ironmind-core",
  "ironmind-mcp",
+ "ironmind-r2",
  "ironmind-web",
  "serde_json",
  "tokio",

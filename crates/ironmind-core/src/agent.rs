@@ -1,6 +1,7 @@
 use crate::{config::AgentConfig, model::IronMindModel};
 use anyhow::Result;
 use serde_json::Value;
+#[cfg(feature = "inference")]
 use tracing::{debug, info, warn};
 
 /// A single MCP tool descriptor.

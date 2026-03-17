@@ -1,16 +1,31 @@
+# ── ironmind toolchain ────────────────────────────────────────────────────────
+# `mise install` sets up everything needed for both Rust and CF Worker dev.
+# All tasks that need secrets run via `doppler run` automatically.
+
 [tools]
-rust = "stable"
+rust    = "stable"
+node    = "22"
+doppler = "latest"
+# wrangler is installed via npm (see task worker:install)
+
+# ── Environment ───────────────────────────────────────────────────────────────
+# Doppler project + config — override with DOPPLER_CONFIG=prd for production
+[env]
+DOPPLER_PROJECT = "ironmind"
+DOPPLER_CONFIG  = "dev"
+
+# ── Rust tasks ────────────────────────────────────────────────────────────────
 
 [tasks.check]
-description = "Cargo check — no inference (CI safe, Linux)"
+description = "Cargo check — no inference (CI safe)"
 run = "cargo check --workspace"
 
 [tasks.check-metal]
-description = "Cargo check with Metal (Apple Silicon only)"
+description = "Cargo check with Metal (Apple Silicon)"
 run = "cargo check --workspace --features metal"
 
 [tasks.fmt]
-description = "Format all crates"
+description = "Format all Rust crates"
 run = "cargo fmt --all"
 
 [tasks.fmt-check]
@@ -22,29 +37,118 @@ description = "Clippy — no inference (CI safe)"
 run = "cargo clippy --workspace --all-targets -- -D warnings"
 
 [tasks.clippy-metal]
-description = "Clippy with Metal (Apple Silicon only)"
+description = "Clippy with Metal (Apple Silicon)"
 run = "cargo clippy --workspace --all-targets --features metal -- -D warnings"
 
 [tasks.test]
-description = "Run tests — no inference"
+description = "Run all tests"
 run = "cargo test --workspace"
 
 [tasks.build]
-description = "Release build with Metal (Apple Silicon)"
+description = "Release build with Metal (Apple Silicon M4 Max)"
 run = "cargo build --release --workspace --features metal"
 
+[tasks.build-ci]
+description = "Release build — no inference (CI)"
+run = "cargo build --release --workspace"
+
+# ── Serve tasks (inject secrets via Doppler) ──────────────────────────────────
+
 [tasks.serve]
-description = "Run chat GUI server (stub mode — no inference)"
-run = "cargo run --bin ironmind -- serve"
+description = "Chat GUI server — stub mode, no inference (uses Doppler dev secrets)"
+run = "doppler run -- cargo run --bin ironmind -- serve"
 
 [tasks.serve-metal]
-description = "Run chat GUI server with real Qwen3 inference"
-run = "cargo run --release --features metal --bin ironmind -- serve"
+description = "Chat GUI server — real Qwen3 inference via Metal"
+run = "doppler run -- cargo run --release --features metal --bin ironmind -- serve"
 
 [tasks.run]
-description = "Single prompt agent run (Metal)"
-run = "cargo run --release --features metal --bin ironmind -- run --prompt"
+description = "Single prompt agent run (Metal + Doppler secrets)"
+run = "doppler run -- cargo run --release --features metal --bin ironmind -- run --prompt"
+
+# ── User admin ────────────────────────────────────────────────────────────────
+
+[tasks.user-create]
+description = "Create a user: mise run user-create -- <id> <name>"
+run = "doppler run -- cargo run --bin ironmind -- user create"
+
+[tasks.user-rotate]
+description = "Rotate a user token: mise run user-rotate -- <id>"
+run = "doppler run -- cargo run --bin ironmind -- user rotate"
+
+# ── CF Worker tasks ───────────────────────────────────────────────────────────
+
+[tasks.worker-install]
+description = "Install worker npm dependencies"
+run = "cd worker && npm install"
+
+[tasks.worker-dev]
+description = "Run CF Worker locally (with Doppler secrets injected)"
+run = "cd worker && doppler run -- npx wrangler dev"
+
+[tasks.worker-deploy]
+description = "Deploy CF Worker to Cloudflare (production)"
+run = "cd worker && doppler run --config prd -- npx wrangler deploy"
+
+[tasks.worker-deploy-dev]
+description = "Deploy CF Worker to Cloudflare (dev environment)"
+run = "cd worker && doppler run -- npx wrangler deploy --env dev"
+
+[tasks.worker-secrets-push]
+description = "Push Doppler secrets to CF Worker via wrangler secret"
+run = """
+cd worker
+doppler secrets download --no-file --format env \
+  --project ironmind --config prd \
+  | grep -E "^IRONMIND_" \
+  | while IFS='=' read -r key val; do
+      echo "$val" | npx wrangler secret put "$key"
+    done
+"""
+
+[tasks.worker-ui-upload]
+description = "Upload static UI to R2 so the worker can serve it"
+run = """
+doppler run -- npx wrangler r2 object put ironmind/static/index.html \
+  --file crates/ironmind-web/static/index.html \
+  --content-type text/html
+"""
+
+# ── Tailscale helpers ─────────────────────────────────────────────────────────
+
+[tasks.tailscale-ip]
+description = "Print this machine's Tailscale IP (run on Mac Mini)"
+run = "tailscale ip -4"
+
+[tasks.set-upstream]
+description = "Update IRONMIND_UPSTREAM_URL in Doppler with Mac Mini Tailscale IP"
+run = """
+IP=$(tailscale ip -4)
+doppler secrets set IRONMIND_UPSTREAM_URL="http://$IP:3000" \
+  --project ironmind --config prd
+echo "Set IRONMIND_UPSTREAM_URL=http://$IP:3000 in Doppler prd"
+"""
+
+# ── Model ─────────────────────────────────────────────────────────────────────
 
 [tasks.model-download]
-description = "Download Qwen3-30B-A3B weights for offline use"
+description = "Download Qwen3-30B-A3B weights for offline factory use"
 run = "huggingface-cli download Qwen/Qwen3-30B-A3B --local-dir ./models/qwen3-30b-a3b"
+
+# ── Bootstrap ─────────────────────────────────────────────────────────────────
+
+[tasks.bootstrap]
+description = "Full first-time setup: install tools + worker deps"
+depends = ["worker-install"]
+run = """
+echo "✓ Rust $(rustc --version)"
+echo "✓ Node $(node --version)"
+echo "✓ Doppler $(doppler --version)"
+echo "✓ Worker deps installed"
+echo ""
+echo "Next steps:"
+echo "  1. Set R2 credentials in Doppler dashboard: https://dashboard.doppler.com"
+echo "  2. Run: mise run serve          (stub mode, no model needed)"
+echo "  3. Run: mise run model-download (before factory deploy)"
+echo "  4. Run: mise run serve-metal    (real inference)"
+"""

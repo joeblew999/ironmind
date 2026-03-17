@@ -7,9 +7,8 @@ use axum::{
 };
 use ironmind_core::config::Config;
 use ironmind_r2::store::ConversationStore;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::sync::Arc;
-use tracing::info;
 
 // ---------------------------------------------------------------------------
 // State
@@ -47,7 +46,7 @@ pub async fn chat_handler(
     State(state): State<Arc<AppState>>,
     Json(req): Json<ChatRequest>,
 ) -> Sse<SseStream> {
-    info!(conversation_id = %req.conversation_id, "Chat");
+    tracing::info!(conversation_id = %req.conversation_id, "Chat");
     let mcp_url = req
         .mcp_url
         .clone()

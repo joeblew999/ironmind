@@ -1,8 +1,7 @@
 use crate::api::{AppState, ChatRequest};
 use axum::response::sse::Event;
 use futures::Stream;
-use ironmind_mcp::client::{HttpTransport, McpClient};
-use ironmind_r2::model::{Conversation, Message, MessageRole, ToolCallRecord};
+use ironmind_r2::model::{Conversation, Message, MessageRole};
 use std::{
     pin::Pin,
     sync::Arc,
@@ -10,7 +9,14 @@ use std::{
 };
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
-use tracing::{error, info};
+use tracing::error;
+
+#[cfg(feature = "inference")]
+use ironmind_mcp::client::{HttpTransport, McpClient};
+#[cfg(feature = "inference")]
+use ironmind_r2::model::ToolCallRecord;
+#[cfg(feature = "inference")]
+use tracing::info;
 
 type SseTx = mpsc::Sender<Result<Event, std::convert::Infallible>>;
 
@@ -88,7 +94,7 @@ impl Stream for SseStream {
     }
 }
 
-// ── Agent task ───────────────────────────────────────────────────────────────
+// ── Agent task — inference build ─────────────────────────────────────────────
 
 #[cfg(feature = "inference")]
 async fn agent_task(
@@ -99,7 +105,6 @@ async fn agent_task(
 ) -> anyhow::Result<()> {
     use ironmind_core::{agent, model::IronMindModel};
 
-    // Load or create conversation
     let mut conv = match &state.store {
         Some(store) => store
             .get_conversation(&req.conversation_id)
@@ -118,7 +123,6 @@ async fn agent_task(
         ),
     };
 
-    // Record user message
     conv.messages.push(Message {
         id: uuid::Uuid::new_v4().to_string(),
         role: MessageRole::User,
@@ -133,7 +137,7 @@ async fn agent_task(
     info!(tools = tools.len(), conv_id = %req.conversation_id, "Agent starting");
 
     let tx2 = tx.clone();
-    let mut tool_log = vec![];
+    let mut tool_log: Vec<ToolCallRecord> = vec![];
 
     let result = agent::run(
         &model,
@@ -168,7 +172,6 @@ async fn agent_task(
     )
     .await?;
 
-    // Stream final answer token by token
     for word in result.final_text.split_inclusive(' ') {
         emit(
             tx,
@@ -186,7 +189,6 @@ async fn agent_task(
     )
     .await;
 
-    // Persist assistant message to R2
     conv.messages.push(Message {
         id: uuid::Uuid::new_v4().to_string(),
         role: MessageRole::Assistant,
@@ -204,6 +206,8 @@ async fn agent_task(
     Ok(())
 }
 
+// ── Agent task — stub build (CI / no inference) ───────────────────────────────
+
 #[cfg(not(feature = "inference"))]
 async fn agent_task(
     state: &AppState,
@@ -211,15 +215,11 @@ async fn agent_task(
     _mcp_url: &str,
     tx: &SseTx,
 ) -> anyhow::Result<()> {
-    use ironmind_r2::model::{Conversation, Message, MessageRole};
-
-    // Stub — runs without Apple Silicon / CUDA
     let reply = format!(
-        "ironmind stub mode — echo: {}\n\nRebuild with --features metal for real Qwen3 inference.",
+        "ironmind stub — echo: {}\n\nRebuild with --features metal for real Qwen3 inference.",
         req.message
     );
 
-    // Stream word by word so the UI animation works
     for word in reply.split_inclusive(' ') {
         emit(
             tx,
@@ -232,7 +232,6 @@ async fn agent_task(
     }
     emit(tx, ChatEvent::Done { rounds: 0 }).await;
 
-    // Still persist stub conversations to R2 if configured
     let mut conv = match &state.store {
         Some(store) => store
             .get_conversation(&req.conversation_id)
@@ -251,6 +250,7 @@ async fn agent_task(
             "stub".to_string(),
         ),
     };
+
     conv.messages.push(Message {
         id: uuid::Uuid::new_v4().to_string(),
         role: MessageRole::User,
@@ -265,6 +265,7 @@ async fn agent_task(
         tool_calls: vec![],
         created_at: chrono::Utc::now(),
     });
+
     if let Some(store) = &state.store {
         let _ = store.save_conversation(&mut conv).await;
     }

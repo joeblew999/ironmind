@@ -1,0 +1,8 @@
+# ironmind Doppler config
+# Locks this directory to the ironmind project.
+# `doppler run -- <cmd>` will inject the right secrets automatically.
+# Override config with: doppler run --config prd -- <cmd>
+
+setup:
+  project: ironmind
+  config: dev

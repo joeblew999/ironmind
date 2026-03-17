@@ -1,0 +1,6 @@
+# Worker uses prd config by default (it's always deployed to production CF)
+# Override for testing: doppler run --config dev -- npx wrangler dev
+
+setup:
+  project: ironmind
+  config: prd

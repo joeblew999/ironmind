@@ -1,6 +1,6 @@
 use crate::{
     client::R2Client,
-    model::{Conversation, ConversationMeta, Message, ToolCallRecord, UserProfile},
+    model::{Conversation, ConversationMeta, Message, UserProfile},
 };
 use anyhow::Result;
 use chrono::Utc;
