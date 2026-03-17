@@ -1,0 +1,32 @@
+[package]
+name        = "ironmind-web"
+description = "Chat GUI + API server for ironmind"
+version.workspace    = true
+edition.workspace    = true
+license.workspace    = true
+authors.workspace    = true
+repository.workspace = true
+
+[features]
+default   = []
+inference = ["ironmind-core/inference", "ironmind-mcp/inference"]
+metal     = ["ironmind-core/metal",     "ironmind-mcp/metal"]
+cuda      = ["ironmind-core/cuda",      "ironmind-mcp/cuda"]
+
+[dependencies]
+ironmind-core  = { path = "../ironmind-core" }
+ironmind-mcp   = { path = "../ironmind-mcp" }
+ironmind-r2    = { path = "../ironmind-r2" }
+ironmind-auth  = { path = "../ironmind-auth" }
+tokio          = { workspace = true }
+tokio-stream   = { workspace = true }
+futures        = { workspace = true }
+anyhow         = { workspace = true }
+serde          = { workspace = true }
+serde_json     = { workspace = true }
+tracing        = { workspace = true }
+axum           = { workspace = true }
+axum-extra     = { workspace = true }
+tower-http     = { workspace = true }
+uuid           = { workspace = true }
+chrono         = { version = "0.4", features = ["serde"] }

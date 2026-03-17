@@ -1,0 +1,20 @@
+[package]
+name        = "ironmind-auth"
+description = "Token-based auth for ironmind"
+version.workspace    = true
+edition.workspace    = true
+license.workspace    = true
+authors.workspace    = true
+repository.workspace = true
+
+[dependencies]
+ironmind-r2 = { path = "../ironmind-r2" }
+anyhow      = { workspace = true }
+serde       = { workspace = true }
+serde_json  = { workspace = true }
+tokio       = { workspace = true }
+tracing     = { workspace = true }
+axum        = { workspace = true }
+async-trait = { workspace = true }
+blake3      = "1"
+chrono      = { version = "0.4", features = ["serde"] }

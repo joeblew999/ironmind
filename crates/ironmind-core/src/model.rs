@@ -1,16 +1,20 @@
 use crate::config::ModelConfig;
 use anyhow::Result;
-use mistralrs::{IsqType, TextModelBuilder};
-use std::str::FromStr;
 
+#[cfg(feature = "inference")]
 pub struct IronMindModel {
     pub inner: mistralrs::Model,
 }
 
+#[cfg(not(feature = "inference"))]
+pub struct IronMindModel;
+
 impl IronMindModel {
-    /// Load model from local weights path — fully offline, no HF hub call.
+    #[cfg(feature = "inference")]
     pub async fn load(cfg: &ModelConfig) -> Result<Self> {
-        // Belt-and-braces: disable HF hub at env level for factory deploys
+        use mistralrs::{IsqType, TextModelBuilder};
+        use std::str::FromStr;
+
         std::env::set_var("HF_HUB_OFFLINE", "1");
         std::env::set_var(
             "HF_HUB_CACHE",
@@ -31,5 +35,13 @@ impl IronMindModel {
         .await?;
 
         Ok(Self { inner: model })
+    }
+
+    #[cfg(not(feature = "inference"))]
+    pub async fn load(_cfg: &ModelConfig) -> Result<Self> {
+        anyhow::bail!(
+            "ironmind compiled without inference support. \
+             Rebuild with --features metal (Apple Silicon) or --features cuda."
+        )
     }
 }

@@ -1,13 +1,13 @@
 [tools]
-rust = "latest"
+rust = "stable"
 
 [tasks.check]
-description = "Cargo check (no Metal — CI safe)"
-run = "cargo check --no-default-features --features cpu"
+description = "Cargo check — no inference (CI safe, Linux)"
+run = "cargo check --workspace"
 
 [tasks.check-metal]
 description = "Cargo check with Metal (Apple Silicon only)"
-run = "cargo check --features metal"
+run = "cargo check --workspace --features metal"
 
 [tasks.fmt]
 description = "Format all crates"
@@ -18,25 +18,33 @@ description = "Check formatting (CI)"
 run = "cargo fmt --all -- --check"
 
 [tasks.clippy]
-description = "Clippy lint"
-run = "cargo clippy --all-targets --no-default-features --features cpu -- -D warnings"
+description = "Clippy — no inference (CI safe)"
+run = "cargo clippy --workspace --all-targets -- -D warnings"
+
+[tasks.clippy-metal]
+description = "Clippy with Metal (Apple Silicon only)"
+run = "cargo clippy --workspace --all-targets --features metal -- -D warnings"
 
 [tasks.test]
-description = "Run tests"
-run = "cargo test --all --no-default-features --features cpu"
+description = "Run tests — no inference"
+run = "cargo test --workspace"
 
 [tasks.build]
-description = "Release build (Metal)"
-run = "cargo build --release --features metal"
+description = "Release build with Metal (Apple Silicon)"
+run = "cargo build --release --workspace --features metal"
 
-[tasks.build-ci]
-description = "Release build (CPU — CI safe)"
-run = "cargo build --release --no-default-features --features cpu"
+[tasks.serve]
+description = "Run chat GUI server (stub mode — no inference)"
+run = "cargo run --bin ironmind -- serve"
+
+[tasks.serve-metal]
+description = "Run chat GUI server with real Qwen3 inference"
+run = "cargo run --release --features metal --bin ironmind -- serve"
+
+[tasks.run]
+description = "Single prompt agent run (Metal)"
+run = "cargo run --release --features metal --bin ironmind -- run --prompt"
 
 [tasks.model-download]
 description = "Download Qwen3-30B-A3B weights for offline use"
 run = "huggingface-cli download Qwen/Qwen3-30B-A3B --local-dir ./models/qwen3-30b-a3b"
-
-[tasks.run]
-description = "Run ironmind with default config"
-run = "cargo run --release --features metal --bin ironmind -- --config ironmind.toml --prompt"

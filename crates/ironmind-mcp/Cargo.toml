@@ -1,18 +1,24 @@
 [package]
 name        = "ironmind-mcp"
-description = "MCP client for ironmind — dispatches tool calls to any MCP server"
+description = "MCP client for ironmind"
 version.workspace    = true
 edition.workspace    = true
 license.workspace    = true
 authors.workspace    = true
 repository.workspace = true
 
+[features]
+default   = []
+inference = ["ironmind-core/inference"]
+metal     = ["ironmind-core/metal"]
+cuda      = ["ironmind-core/cuda"]
+
 [dependencies]
-ironmind-core   = { path = "../ironmind-core" }
-tokio           = { workspace = true }
-anyhow          = { workspace = true }
-serde           = { workspace = true }
-serde_json      = { workspace = true }
-tracing         = { workspace = true }
-reqwest         = { workspace = true }
-async-trait     = "0.1"
+ironmind-core = { path = "../ironmind-core" }
+tokio         = { workspace = true }
+anyhow        = { workspace = true }
+serde         = { workspace = true }
+serde_json    = { workspace = true }
+tracing       = { workspace = true }
+reqwest       = { workspace = true }
+async-trait   = { workspace = true }

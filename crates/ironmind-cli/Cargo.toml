@@ -1,6 +1,6 @@
 [package]
 name        = "ironmind"
-description = "ironmind CLI — run Qwen3 offline against an MCP tool server"
+description = "ironmind CLI — agent runner + web chat server"
 version.workspace    = true
 edition.workspace    = true
 license.workspace    = true
@@ -11,12 +11,19 @@ repository.workspace = true
 name = "ironmind"
 path = "src/main.rs"
 
+[features]
+default   = []
+inference = ["ironmind-core/inference", "ironmind-mcp/inference", "ironmind-web/inference"]
+metal     = ["ironmind-core/metal",     "ironmind-mcp/metal",     "ironmind-web/metal"]
+cuda      = ["ironmind-core/cuda",      "ironmind-mcp/cuda",      "ironmind-web/cuda"]
+
 [dependencies]
 ironmind-core      = { path = "../ironmind-core" }
 ironmind-mcp       = { path = "../ironmind-mcp" }
+ironmind-web       = { path = "../ironmind-web" }
 tokio              = { workspace = true }
 anyhow             = { workspace = true }
 serde_json         = { workspace = true }
 tracing            = { workspace = true }
 tracing-subscriber = { workspace = true }
-clap               = { version = "4", features = ["derive"] }
+clap               = { workspace = true }

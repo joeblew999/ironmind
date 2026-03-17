@@ -7,18 +7,20 @@ license.workspace    = true
 authors.workspace    = true
 repository.workspace = true
 
-[dependencies]
-mistralrs           = { workspace = true }
-tokio               = { workspace = true }
-anyhow              = { workspace = true }
-serde               = { workspace = true }
-serde_json          = { workspace = true }
-tracing             = { workspace = true }
-tracing-subscriber  = { workspace = true }
-toml                = "0.8"
-
 [features]
-default = ["metal"]
-metal   = ["mistralrs/metal"]
-cuda    = ["mistralrs/cuda"]
-cpu     = []
+# "inference" enables mistral.rs — requires Apple Silicon (Metal) or CUDA
+# Do NOT enable on Linux CI
+default   = []
+inference = ["dep:mistralrs"]
+metal     = ["inference", "mistralrs/metal"]
+cuda      = ["inference", "mistralrs/cuda"]
+
+[dependencies]
+mistralrs          = { git = "https://github.com/EricLBuehler/mistral.rs.git", optional = true }
+tokio              = { workspace = true }
+anyhow             = { workspace = true }
+serde              = { workspace = true }
+serde_json         = { workspace = true }
+tracing            = { workspace = true }
+tracing-subscriber = { workspace = true }
+toml               = { workspace = true }
