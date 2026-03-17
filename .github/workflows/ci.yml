@@ -15,6 +15,9 @@ jobs:
       - name: Install mise
         uses: jdx/mise-action@v2
 
+      - name: Install Rust components
+        run: rustup component add rustfmt clippy
+
       - name: Fmt check
         run: mise run fmt-check
 
