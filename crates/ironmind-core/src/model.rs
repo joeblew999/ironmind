@@ -14,9 +14,7 @@ impl IronMindModel {
         std::env::set_var("HF_HUB_OFFLINE", "1");
         std::env::set_var(
             "HF_HUB_CACHE",
-            cfg.weights_path
-                .parent()
-                .unwrap_or(&cfg.weights_path),
+            cfg.weights_path.parent().unwrap_or(&cfg.weights_path),
         );
 
         let isq = IsqType::from_str(&cfg.isq)

@@ -90,8 +90,8 @@ where
         match &choice.message.tool_calls {
             Some(calls) if !calls.is_empty() => {
                 for call in calls {
-                    let args: Value = serde_json::from_str(&call.function.arguments)
-                        .unwrap_or(Value::Null);
+                    let args: Value =
+                        serde_json::from_str(&call.function.arguments).unwrap_or(Value::Null);
 
                     debug!(tool = %call.function.name, ?args, "Dispatching tool call");
 
@@ -111,7 +111,10 @@ where
                     .unwrap_or_else(|| "Done.".into());
 
                 info!(rounds, "Agent finished");
-                return Ok(AgentResult { final_text: text, rounds });
+                return Ok(AgentResult {
+                    final_text: text,
+                    rounds,
+                });
             }
         }
     }

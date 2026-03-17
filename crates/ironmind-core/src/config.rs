@@ -32,9 +32,15 @@ pub struct AgentConfig {
     pub max_rounds: usize,
 }
 
-fn default_true() -> bool { true }
-fn default_max_tokens() -> usize { 2048 }
-fn default_max_rounds() -> usize { 20 }
+fn default_true() -> bool {
+    true
+}
+fn default_max_tokens() -> usize {
+    2048
+}
+fn default_max_rounds() -> usize {
+    20
+}
 
 impl Config {
     pub fn from_file(path: &str) -> anyhow::Result<Self> {

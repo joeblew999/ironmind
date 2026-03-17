@@ -6,9 +6,9 @@ use tracing_subscriber::fmt;
 
 #[derive(Parser)]
 #[command(
-    name    = "ironmind",
+    name = "ironmind",
     version,
-    about   = "Offline Qwen3 → MCP agent for factory / industrial use on Apple Silicon"
+    about = "Offline Qwen3 → MCP agent for factory / industrial use on Apple Silicon"
 )]
 struct Cli {
     /// Path to ironmind.toml

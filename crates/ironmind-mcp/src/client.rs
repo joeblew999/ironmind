@@ -12,7 +12,9 @@ pub struct McpClient {
 
 impl McpClient {
     pub fn new(transport: impl McpTransport + 'static) -> Self {
-        Self { transport: Box::new(transport) }
+        Self {
+            transport: Box::new(transport),
+        }
     }
 
     /// Fetch the full tool list from the MCP server (tools/list).
@@ -23,9 +25,9 @@ impl McpClient {
             .ok_or_else(|| anyhow::anyhow!("tools/list: expected 'tools' array in response"))?
             .iter()
             .map(|t| McpTool {
-                name:        t["name"].as_str().unwrap_or("").to_string(),
+                name: t["name"].as_str().unwrap_or("").to_string(),
                 description: t["description"].as_str().unwrap_or("").to_string(),
-                parameters:  t["inputSchema"].clone(),
+                parameters: t["inputSchema"].clone(),
             })
             .collect();
         Ok(tools)
