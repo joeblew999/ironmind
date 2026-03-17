@@ -1,0 +1,8 @@
+[model]
+weights_path = "./models/qwen3-30b-a3b"
+isq          = "Q4K"
+thinking     = true
+max_tokens   = 2048
+
+[agent]
+max_rounds = 20

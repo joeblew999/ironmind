@@ -1,0 +1,22 @@
+[package]
+name        = "ironmind"
+description = "ironmind CLI — run Qwen3 offline against an MCP tool server"
+version.workspace    = true
+edition.workspace    = true
+license.workspace    = true
+authors.workspace    = true
+repository.workspace = true
+
+[[bin]]
+name = "ironmind"
+path = "src/main.rs"
+
+[dependencies]
+ironmind-core      = { path = "../ironmind-core" }
+ironmind-mcp       = { path = "../ironmind-mcp" }
+tokio              = { workspace = true }
+anyhow             = { workspace = true }
+serde_json         = { workspace = true }
+tracing            = { workspace = true }
+tracing-subscriber = { workspace = true }
+clap               = { version = "4", features = ["derive"] }
